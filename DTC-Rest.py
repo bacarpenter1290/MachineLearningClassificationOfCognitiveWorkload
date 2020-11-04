@@ -23,25 +23,28 @@ parser.add_argument('GSR')
 
 class PredictStress(Resource):
     def post(self):
-        args = parser.parse_args()
-        HRData = args['HR']
-        RESPData = args['RESP']
-        GSRData = args['GSR']
-        
-        inputArray = np.array([GSRData, HRData, RESPData])
-        prediction = model.predict(inputArray.reshape(1,-1))
-        
-        if prediction == 1:
-            pred_text = 'Understressed'
-        elif prediction == 2:
-            pred_text = 'Moderately Stressed'
-        elif prediction == 3:
-            pred_text = 'Overstressed'
-        else:
-            pred_text = 'Unknown'
-        
-        output = {'class': pred_text}
-        
+        try:
+            args = parser.parse_args()
+            HRData = args['HR']
+            RESPData = args['RESP']
+            GSRData = args['GSR']
+            
+            inputArray = np.array([GSRData, HRData, RESPData])
+            prediction = model.predict(inputArray.reshape(1,-1))
+            
+            if prediction == 1:
+                pred_text = 'Understressed'
+            elif prediction == 2:
+                pred_text = 'Moderately Stressed'
+            elif prediction == 3:
+                pred_text = 'Overstressed'
+            else:
+                pred_text = 'Unknown'
+            
+            output = {'class': pred_text}
+        except:
+            print("An exception has occured")
+            output = {'class': 'unknown'}
         return output
     
 class TestGet(Resource):
