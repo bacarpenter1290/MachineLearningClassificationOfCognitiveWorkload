@@ -35,7 +35,7 @@ class PredictStress(Resource):
             inputArray = np.array([GSRData, HRData, RESPData])
             prediction = model.predict(inputArray.reshape(1,-1))
             
-            class_hist.append(prediction)
+            class_hist.append(prediction[0])
             
             total = 0
             for i in class_hist:
