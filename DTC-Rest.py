@@ -44,11 +44,11 @@ class PredictStress(Resource):
             avg_pred = total / len(class_hist)
             
             if round(avg_pred) == 1:
-                pred_text = 'Understressed'
+                pred_text = 'Underworked'
             elif round(avg_pred) == 2:
-                pred_text = 'Moderately Stressed'
+                pred_text = 'Working Efficiently'
             elif round(avg_pred) == 3:
-                pred_text = 'Overstressed'
+                pred_text = 'Overworked'
             else:
                 pred_text = 'Unknown'
             

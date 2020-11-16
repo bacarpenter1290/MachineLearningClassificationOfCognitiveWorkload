@@ -750,7 +750,7 @@ void classify() {
 
 void arduinoProcessData() {
   try {
-    File output = new File("C:\\Users\\Baylee\\Documents\\ML\\output2.txt");
+    File output = new File("C:\\Users\\Baylee\\Documents\\GitHub\\MachineLearningClassificationOfCognitiveWorkload\\output2.txt");
     Scanner myReader = new Scanner(output);
      GSR = 0.0;
       while (myReader.hasNextLine()) {
