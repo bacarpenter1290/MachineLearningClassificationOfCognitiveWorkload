@@ -341,7 +341,7 @@ dot_data = tree.export_graphviz(dtc, out_file=None,
                                 special_characters=True) 
 graph = graphviz.Source(dot_data) 
 
-# save the classifier to a folder
+# save the classifier to a file for use with REST API
 from joblib import dump
 dump(dtc, '../classifier.joblib')
 
