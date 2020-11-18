@@ -37,7 +37,7 @@ plt.plot(signals6[:,2])
 plt.plot(signals6[:,3])
 plt.plot(signals6[:,4])
 plt.plot(signals6[:,6])
-plt.legend('ECG', 'EMG', 'FGSR', 'HGSR', 'HR', 'RESP')
+plt.legend(('ECG', 'EMG', 'FGSR', 'HGSR', 'HR', 'RESP'))
 plt.title('Signals and markers from drive 6')
 
 # plot markers
@@ -343,7 +343,7 @@ graph = graphviz.Source(dot_data)
 
 # save the classifier to a folder
 from joblib import dump
-dump(dtc, 'classifier.joblib')
+dump(dtc, '../classifier.joblib')
 
 # render the tree into a pdf file
 #graph.render("Decision Tree - Test")
