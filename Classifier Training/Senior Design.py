@@ -3,20 +3,18 @@
 Created on Tue Mar 10 16:47:15 2020
 
 @author: Baylee
+for ECE 429 and 439
+at Purdue University Northwest
+Electrical and Computer Engineering Department
 """
 import wfdb as wf
 import numpy as np
 import graphviz
-#from biosppy.signals import ecg
-#import heartpy as hp
 import matplotlib.pyplot as plt
-#from scipy.signal import resample
-#import scikitplot as skplt
 from sklearn.svm import SVC
 from sklearn.neural_network import MLPClassifier
 from sklearn.preprocessing import normalize
 from sklearn.cluster import KMeans
-from mlxtend.plotting import plot_decision_regions
 from sklearn.tree import DecisionTreeClassifier
 from sklearn import model_selection
 from sklearn import tree
@@ -27,76 +25,30 @@ signals7, fields7 = wf.io.rdsamp("drive07")
 signals8, fields8 = wf.io.rdsamp("drive08")
 signals11, fields11 = wf.io.rdsamp("drive11")
 signals10, fields10 = wf.io.rdsamp("drive10")
-print(signals6)
+print(signals6[:,0])
 print(fields6)
-ecg6_list = []
-emg6_list = []
-fgsr6_list = []
-hgsr6_list = []
-hr6_list = []
-marker6_list = []
-resp6_list = []
-
-for i in range(len(signals6)):
-    ecg6_list.append(signals6[i][0])
-    emg6_list.append(signals6[i][1])
-    fgsr6_list.append(signals6[i][2])
-    hgsr6_list.append(signals6[i][3])
-    hr6_list.append(signals6[i][4])
-    marker6_list.append(signals6[i][5])
-    resp6_list.append(signals6[i][6])
-    
    
-marker7_list = []
-
-for i in range(len(signals7)):
-    marker7_list.append(signals7[i][5])
-ecg6_np = np.asarray(ecg6_list)
-
-marker8_list = []
-
-for i in range(len(signals8)):
-    marker8_list.append(signals8[i][5])
-
-marker11_list = []
-for i in range(len(signals11)):
-    marker11_list.append(signals11[i][5])
-
-marker10_list = []
-for i in range(len(signals10)):
-    marker10_list.append(signals10[i][5])
-
-print(ecg6_np)
-    
-#for i in range(10):
-#   print(ecg6_list[i], end='\n')
-#   print(emg6_list[i], end='\n')
-    
+# plot signals 
 plt.figure(1)
-plt.subplot(411)
-plt.plot(ecg6_list)
-plt.plot(emg6_list)
-plt.plot(fgsr6_list)
-plt.plot(hgsr6_list)
-plt.plot(hr6_list)
-plt.plot(resp6_list)
+plt.subplot(211)
+plt.plot(signals6[:,0])
+plt.plot(signals6[:,1])
+plt.plot(signals6[:,2])
+plt.plot(signals6[:,3])
+plt.plot(signals6[:,4])
+plt.plot(signals6[:,6])
+plt.legend('ECG', 'EMG', 'FGSR', 'HGSR', 'HR', 'RESP')
+plt.title('Signals and markers from drive 6')
 
+# plot markers
 plt.figure(1)
-plt.subplot(412)
-plt.plot(marker8_list)
+plt.subplot(212)
+plt.plot(signals6[:,0])
 
-plt.subplot(413)
-plt.plot(marker10_list)
-
-plt.subplot(414)
-plt.plot(marker11_list)
-# wf.plot_all_records()
-
-# process it and plot
-#ts,filtered,rpeaks,templates_ts,templates,heart_rate_ts,heart_rate = ecg.ecg(signal=ecg6_list, sampling_rate=100, show=True)
-
+# set section length for train data
 sectionLength = 50
 
+# set starting points for each period
 restStart6 = 4000
 cityStart6 = 37000
 HWStart6 = 45000
@@ -113,6 +65,7 @@ restStart11 = 4000
 cityStart11 = 20000
 HWStart11 = 31000
 
+# create separate lists for signals and labels for each region
 trainDataRest6 = signals6[restStart6:restStart6 + sectionLength][:]
 trainLabelsRest6 = np.ones(len(trainDataRest6))
 
@@ -150,8 +103,8 @@ trainDataHW11 = signals11[HWStart11:HWStart11 + sectionLength][:]
 trainLabelsHW11 = np.ones(len(trainDataHW11)) * 2
 
 
+# combine regions into one training set
 length = sectionLength * 3
-
 
 trainData = [[] for i in range(4*length)]
 trainLabels = []
@@ -222,7 +175,8 @@ for j in range(length):
         trainLabels.append(trainLabelsCity11[j-sectionLength])
     else:
         trainLabels.append(trainLabelsHW11[j-(2*sectionLength)])
-        
+   
+# create testing set from drive 7     
 testDataRest = signals7[4000:10000][:]
 testLabelsRest = np.ones(len(testDataRest))
 
@@ -252,29 +206,30 @@ for j in range(length):
         testLabels.append(testLabelsCity[j-6000])
     else:
         testLabels.append(testLabelsHW[j-11000])
-        
+  
+# remove unused features (physiological data device doesn't collect these signals)
 testData = np.delete(testData, 5, 1)
 testData = np.delete(testData, 1, 1)
 testData = np.delete(testData, 1, 1)
 testData = np.delete(testData, 0, 1)
-#testData = np.delete(testData, 1, 1)
 
 trainData = np.delete(trainData, 5, 1)
 trainData = np.delete(trainData, 1, 1)
 trainData = np.delete(trainData, 1, 1)
 trainData = np.delete(trainData, 0, 1)
-#trainData = np.delete(trainData, 1, 1)
 
 signals7_del = np.delete(signals7, 5, 1)
 signals7_del = np.delete(signals7_del, 1, 1)
 signals7_del = np.delete(signals7_del, 1, 1)
 signals7_del = np.delete(signals7_del, 0, 1)
-#signals7_del = np.delete(signals7_del, 1, 1)
+
 #print(testData)
 #print(trainLabels)
 
 trainLabels_np = np.array(trainLabels)
 
+# normalize the data
+# didn't work as well as scaling, didn't use in final version
 trainData_norm = normalize(trainData,axis = 0)
 plt.figure(3)
 plt.plot(trainData_norm)
@@ -288,8 +243,7 @@ plt.title("Norm test data")
 #plt.plot(testLabels)
 
 
-
-
+# scale data
 trainData_scale = preprocessing.scale(trainData)
 testData_scale = preprocessing.scale(testData)
 
@@ -303,11 +257,13 @@ plt.title("scale test data")
 
 plt.figure(7)
 
+# split the training set into a training dataset and a validation set
 train_in, val_in, train_out, val_out = model_selection.train_test_split(trainData_scale, 
                                                                         trainLabels, test_size=0.2)
 
 
-
+# fit the classifiers
+# decision tree was chosen. the rest are commented out to decrease run time
 dtc = DecisionTreeClassifier()
 tree.plot_tree(dtc.fit(train_in, train_out))
 
@@ -347,11 +303,12 @@ tree.plot_tree(dtc.fit(train_in, train_out))
 #print(dtc.predict(signals7_del[20000:21000]))
 #print(dtc.predict(signals7_del[35000:36000]))
 
-
+# validate classifier using score
 print("Accuracy: ")
 print(dtc.score(val_in, val_out))
 
 
+# test accuracy of classifier using predict
 total1 = 0
 total2 = 0
 total3 = 0
@@ -360,7 +317,6 @@ testRange = 1000
 
 for i in range(testRange):
     total1 += dtc.predict(testData_scale[1000 + i].reshape(1,-1))
-#    print(dtc.predict(testData_norm[1000 + i].reshape(1,-1)))
     total2 += dtc.predict(testData_scale[7000 + i].reshape(1,-1))
     total3 += dtc.predict(testData_scale[12000 + i].reshape(1,-1))
    
@@ -371,8 +327,10 @@ print("Average class during rest ", avg1)
 print("Average class during city ", avg2)
 print("Average class during highway ", avg3)
 
+# test accuracy of classifier using score
 print(dtc.score(testData_scale, testLabels))
 
+# plot the resulting decision tree
 feature_names = ["Foot GSR", "HR", "RESP"]
 target_names = ["Underworked", "Working Efficiently", "Overworked"]
 
@@ -383,86 +341,9 @@ dot_data = tree.export_graphviz(dtc, out_file=None,
                                 special_characters=True) 
 graph = graphviz.Source(dot_data) 
 
+# save the classifier to a folder
 from joblib import dump
-dump(dtc, 'C:\\Users\\Baylee\\Documents\\ML\\classifier.joblib')
+dump(dtc, 'classifier.joblib')
 
+# render the tree into a pdf file
 #graph.render("Decision Tree - Test")
-
-#plt.figure(8)
-#plt.plot(ecg6_list, label = "ECG (mV)")
-#plt.plot(emg6_list, label = "EMG (mV)")
-#plt.plot(fgsr6_list, label = "Foot GSR (mV)")
-#plt.plot(hgsr6_list, label = "Hand GSR (mV)")
-#plt.plot(hr6_list, label = "Heart Rate (bpm)")
-#plt.plot(resp6_list, label = "Respiration (mV)")
-#plt.title("Drive 6 Signals")
-#plt.xlabel("Sample")
-#plt.ylabel("Signal Values")
-#plt.legend()
-#
-#plt.figure(9)
-#plt.plot(marker6_list)
-#plt.title("Drive 6 Markers")
-#plt.xlabel("Sample")
-#plt.ylabel("Marker Value")
-#
-#plt.figure(10)
-#for i in range(len(heart_rate)):
-   #print(heart_rate[i], end=' ')
-
-# =============================================================================
-# X = heart_rate.reshape(-1,1)
-# y = heart_rate_ts
-# rf = RandomForestRegressor(n_estimators = 1000, random_state = 42)
-# 
-# rf.fit(X[0:1000],y[0:1000])
-# 
-# # Use the forest's predict method on the test data
-# predictions = rf.predict(X[1001:1100])# Calculate the absolute errors
-# print(predictions)
-# =============================================================================
-
-# =============================================================================
-# sample_rate = 250
-# data = ECG_np
-# 
-# filtered = hp.filter_signal(data, cutoff = 0.05, sample_rate = sample_rate, filtertype='notch')
-# 
-# #visualize again
-# plt.figure(figsize=(12,4))
-# plt.plot(filtered)
-# plt.show()
-# 
-# #and zoom in a bit
-# plt.figure(figsize=(12,4))
-# plt.plot(data[0:2500], label = 'original signal')
-# plt.plot(filtered[0:2500], alpha=0.5, label = 'filtered signal')
-# plt.legend()
-# plt.show()
-# 
-# #run analysis
-# wd, m = hp.process(hp.scale_data(filtered), sample_rate)
-# 
-# #visualise in plot of custom size
-# plt.figure(figsize=(12,4))
-# hp.plotter(wd, m)
-# 
-# #display computed measures
-# for measure in m.keys():
-#     print('%s: %f' %(measure, m[measure]))
-#     
-# #resample the data. Usually 2, 4, or 6 times is enough depending on original sampling rate
-# resampled_data = resample(filtered, len(filtered) * 2)
-# 
-# #And run the analysis again. Don't forget to up the sample rate as well!
-# wd, m = hp.process(hp.scale_data(resampled_data), sample_rate * 2)
-# 
-# #visualise in plot of custom size
-# plt.figure(figsize=(12,4))
-# hp.plotter(wd, m)
-# 
-# #display computed measures
-# for measure in m.keys():
-#     print('%s: %f' %(measure, m[measure]))
-# =============================================================================
-
