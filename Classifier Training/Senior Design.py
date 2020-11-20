@@ -43,10 +43,10 @@ plt.title('Signals and markers from drive 6')
 # plot markers
 plt.figure(1)
 plt.subplot(212)
-plt.plot(signals6[:,0])
+plt.plot(signals6[:,5])
 
 # set section length for train data
-sectionLength = 50
+sectionLength = 200
 
 # set starting points for each period
 restStart6 = 4000
